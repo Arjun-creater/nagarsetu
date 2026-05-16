@@ -22,9 +22,9 @@ def create_complaint(*, validated_data, citizen):
         complaint.id
     )
 
-    process_complaint_ai_task.delay(
-        complaint.id
-    )
+    # process_complaint_ai_task.delay(
+    #     complaint.id
+    # )
     check_duplicate_complaint(
     complaint=complaint
 )
