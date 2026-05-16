@@ -21,6 +21,12 @@ const CreateComplaintPage = () => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0]
     if (!file) return
+    if (file.size > 10 * 1024 * 1024) {
+  toast.error(
+    "Image size must be under 10MB."
+  )
+  return
+}
 
     setImage(file)
     setPreview(URL.createObjectURL(file))
@@ -35,19 +41,30 @@ const CreateComplaintPage = () => {
     try {
       setLoading(true)
       const data = await analyzeComplaintImage(image)
+      if (!data.is_civic_issue) {
+
+  toast.error(
+    "This image does not appear related to a civic issue."
+  )
+
+  return
+}
       setAiResult(data)
       setFormData({
         title: data.suggested_title || "",
         description: data.suggested_description || "",
         department: data.department || "",
         priority: data.priority || "",
+        address:data.address || "",
       })
     } catch (error) {
       console.error(
     "Submission failed:",
     error.response?.data
   )
-      alert("Failed to analyze image. Please try again.")
+      toast.error(
+  "Failed to analyze image."
+)
     } finally {
       setLoading(false)
     }
@@ -68,6 +85,33 @@ const CreateComplaintPage = () => {
         alert("Please fill in title and description.")
         return
       }
+      if (!image) {
+  toast.error(
+    "Please upload complaint image."
+  )
+  return
+}
+
+if (!formData.title.trim()) {
+  toast.error(
+    "Please enter complaint title."
+  )
+  return
+}
+
+if (!formData.description.trim()) {
+  toast.error(
+    "Please enter complaint description."
+  )
+  return
+}
+
+if (!formData.address.trim()) {
+  toast.error(
+    "Please enter complaint address."
+  )
+  return
+}
 
       const response = await createComplaint(payload)
       console.log("Complaint created:", response)
@@ -91,6 +135,7 @@ setTimeout(() => {
     error.response?.data
   )
       toast.error(
+  error.response?.data?.detail ||
   "Complaint submission failed."
 )
     } finally {
@@ -284,7 +329,9 @@ setTimeout(() => {
 
               <button
                 onClick={handleSubmitComplaint}
-                disabled={submitLoading || !formData.title || !formData.description}
+                disabled={
+  submitLoading 
+}
                 className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold py-5 px-8 rounded-2xl text-xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-3"
               >
                 {submitLoading ? (
