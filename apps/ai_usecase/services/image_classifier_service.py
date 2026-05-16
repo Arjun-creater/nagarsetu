@@ -29,7 +29,24 @@ You are an AI classifier for municipal civic complaints.
 
 Analyze the uploaded image carefully.
 
-Choose ONLY ONE department based on the PRIMARY visible issue.
+First determine whether the image is related
+to a real civic or municipal issue.
+
+If the image is unrelated to civic issues
+(for example selfies, pets, food, indoor rooms,
+memes, random screenshots, nature photos, etc.)
+then return:
+
+{
+  "department": "Unknown",
+  "confidence": 0.0,
+  "label": "Not a civic issue",
+  "reasoning": "Image does not contain a civic problem.",
+  "is_civic_issue":False
+}
+
+ONLY if the image clearly shows a civic issue,
+choose ONE department based on the PRIMARY issue.
 
 Departments:
 
@@ -60,7 +77,8 @@ Return ONLY valid JSON in this format:
   "department": "",
   "confidence": 0.0,
   "label": "",
-  "reasoning": ""
+  "reasoning": "",
+  "is_civic_issue": false
 }
 """
 
@@ -164,14 +182,14 @@ def classify_image(image_path: str, confidence_threshold: float = 0.5) -> dict:
             }
 
         # Confidence filtering
-        if confidence < confidence_threshold:
-            return {
-                "department": "Unknown",
-                "confidence": confidence,
-                "label": "Low confidence prediction",
-                "reasoning": result.get("reasoning", ""),
-                "is_civic_issue": False
-            }
+        # if confidence < confidence_threshold:
+        #     return {
+        #         "department": "Unknown",
+        #         "confidence": confidence,
+        #         "label": "Low confidence prediction",
+        #         "reasoning": result.get("reasoning", ""),
+        #         "is_civic_issue": False
+        #     }
 
         final_result = {
             "department": department,

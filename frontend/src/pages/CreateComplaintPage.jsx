@@ -19,56 +19,121 @@ const CreateComplaintPage = () => {
   })
 
   const handleImageUpload = (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    if (file.size > 10 * 1024 * 1024) {
-  toast.error(
-    "Image size must be under 10MB."
-  )
-  return
-}
 
-    setImage(file)
-    setPreview(URL.createObjectURL(file))
-    // Reset AI result when new image is uploaded
-    setAiResult(null)
-    setFormData({ title: "", description: "", department: "", priority: "" })
+  const file = e.target.files[0]
+
+  if (!file) return
+
+  if (file.size > 10 * 1024 * 1024) {
+
+    toast.error(
+      "Image size must be under 10MB."
+    )
+
+    return
   }
+
+  setImage(file)
+
+  setPreview(
+    URL.createObjectURL(file)
+  )
+
+  // Reset AI result when new image uploaded
+  setAiResult(null)
+
+  setFormData({
+
+    title: "",
+
+    description: "",
+
+    department: "",
+
+    address: "",
+
+    priority: "",
+  })
+}
 
   const handleAnalyze = async () => {
-    if (!image) return
 
-    try {
-      setLoading(true)
-      const data = await analyzeComplaintImage(image)
-      if (!data.is_civic_issue) {
+  if (!image) return
 
-  toast.error(
-    "This image does not appear related to a civic issue."
-  )
+  try {
 
-  return
-}
-      setAiResult(data)
+    setLoading(true)
+
+    const data =
+      await analyzeComplaintImage(
+        image
+      )
+
+    // Invalid civic image
+    if (!data.is_civic_issue) {
+
+      setAiResult(null)
+
       setFormData({
-        title: data.suggested_title || "",
-        description: data.suggested_description || "",
-        department: data.department || "",
-        priority: data.priority || "",
-        address:data.address || "",
+
+        title: "",
+
+        description: "",
+
+        department: "",
+
+        address: "",
+
+        priority: "",
       })
-    } catch (error) {
-      console.error(
-    "Submission failed:",
-    error.response?.data
-  )
+
       toast.error(
-  "Failed to analyze image."
-)
-    } finally {
-      setLoading(false)
+
+        data.message ||
+
+        "This image does not appear related to a civic issue."
+      )
+
+      return
     }
+
+    // Valid civic image
+    setAiResult(data)
+
+    setFormData({
+
+      title:
+        data.suggested_title || "",
+
+      description:
+        data.suggested_description || "",
+
+      department:
+        data.department || "",
+
+      priority:
+        data.priority || "",
+
+      address:
+        data.address || "",
+    })
+
+  } catch (error) {
+
+    console.error(
+      "Submission failed:",
+      error.response?.data
+    )
+
+    toast.error(
+      "Failed to analyze image."
+    )
+
+  } finally {
+
+    setLoading(false)
   }
+}
 
   const handleSubmitComplaint = async () => {
     try {

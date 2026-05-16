@@ -67,6 +67,20 @@ class AIComplaintAssistantAPIView(
             "department",
             "general"
         )
+        if not image_result.get(
+    "is_civic_issue",
+    True
+):
+            
+
+            return Response({
+
+                "is_civic_issue": False,
+
+                "message":
+                    "This image does not appear related to a civic issue."
+
+            })
 
         confidence = image_result.get(
             "confidence",
