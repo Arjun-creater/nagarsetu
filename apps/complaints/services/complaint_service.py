@@ -4,9 +4,9 @@ from apps.complaints.tasks import (
     send_complaint_notification,
 )
 
-from apps.ai_usecase.tasks.complaint_ai_tasks import (
-    process_complaint_ai_task,
-)
+# from apps.ai_usecase.tasks.complaint_ai_tasks import (
+#     process_complaint_ai_task,
+# )
 from apps.ai_usecase.services.duplicate_detection_service import (
     check_duplicate_complaint,
 )
