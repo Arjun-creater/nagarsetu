@@ -1,89 +1,89 @@
-from sentence_transformers import SentenceTransformer
-from sentence_transformers.util import cos_sim
+# from sentence_transformers import SentenceTransformer
+# from sentence_transformers.util import cos_sim
 
-from apps.complaints.models import Complaint
-
-
-_model = None
+# from apps.complaints.models import Complaint
 
 
-def get_model():
-    global _model
-
-    if _model is None:
-        _model = SentenceTransformer(
-            "all-MiniLM-L6-v2"
-        )
-
-    return _model
+# _model = None
 
 
-SIMILARITY_THRESHOLD = 0.80
+# def get_model():
+#     global _model
+
+#     if _model is None:
+#         _model = SentenceTransformer(
+#             "all-MiniLM-L6-v2"
+#         )
+
+#     return _model
 
 
-def check_duplicate_complaint(*, complaint):
-    print("DUPLICATE CHECK STARTED")
+# SIMILARITY_THRESHOLD = 0.80
 
-    model = get_model()
 
-    current_text = f"""
-Title: {complaint.title}
+# def check_duplicate_complaint(*, complaint):
+#     print("DUPLICATE CHECK STARTED")
 
-Description: {complaint.description}
+#     model = get_model()
 
-Address: {complaint.address}
-"""
+#     current_text = f"""
+# Title: {complaint.title}
 
-    current_embedding = model.encode(
-        current_text,
-        convert_to_tensor=True,
-    )
+# Description: {complaint.description}
 
-    previous_complaints = (
-        Complaint.objects
-        .exclude(id=complaint.id)
-        .order_by("-created_at")[:20]
-    )
+# Address: {complaint.address}
+# """
 
-    for old_complaint in previous_complaints:
+#     current_embedding = model.encode(
+#         current_text,
+#         convert_to_tensor=True,
+#     )
 
-        old_text = f"""
-Title: {old_complaint.title}
+#     previous_complaints = (
+#         Complaint.objects
+#         .exclude(id=complaint.id)
+#         .order_by("-created_at")[:20]
+#     )
 
-Description: {old_complaint.description}
+#     for old_complaint in previous_complaints:
 
-Address: {old_complaint.address}
-"""
-        old_embedding = model.encode(
-            old_text,
-            convert_to_tensor=True,
-        )
+#         old_text = f"""
+# Title: {old_complaint.title}
 
-        similarity = cos_sim(
-            current_embedding,
-            old_embedding,
-        ).item()
+# Description: {old_complaint.description}
 
-        print(similarity)
+# Address: {old_complaint.address}
+# """
+#         old_embedding = model.encode(
+#             old_text,
+#             convert_to_tensor=True,
+#         )
 
-        if similarity >= SIMILARITY_THRESHOLD:
+#         similarity = cos_sim(
+#             current_embedding,
+#             old_embedding,
+#         ).item()
 
-            complaint.is_duplicate = True
-            complaint.duplicate_of = old_complaint
+#         print(similarity)
 
-            complaint.save(
-                update_fields=[
-                    "is_duplicate",
-                    "duplicate_of",
-                ]
-            )
+#         if similarity >= SIMILARITY_THRESHOLD:
 
-            return {
-                "is_duplicate": True,
-                "duplicate_id": old_complaint.id,
-                "similarity": similarity,
-            }
+#             complaint.is_duplicate = True
+#             complaint.duplicate_of = old_complaint
 
-    return {
-        "is_duplicate": False,
-    }
+#             complaint.save(
+#                 update_fields=[
+#                     "is_duplicate",
+#                     "duplicate_of",
+#                 ]
+#             )
+
+#             return {
+#                 "is_duplicate": True,
+#                 "duplicate_id": old_complaint.id,
+#                 "similarity": similarity,
+#             }
+
+#     return {
+#         "is_duplicate": False,
+#     }
