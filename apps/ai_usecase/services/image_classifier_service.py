@@ -160,6 +160,7 @@ def classify_image(image_path: str, confidence_threshold: float = 0.5) -> dict:
                 "confidence": 0.0,
                 "label": "Invalid department predicted",
                 "reasoning": result.get("reasoning", ""),
+                "is_civic_issue": False
             }
 
         # Confidence filtering
@@ -169,6 +170,7 @@ def classify_image(image_path: str, confidence_threshold: float = 0.5) -> dict:
                 "confidence": confidence,
                 "label": "Low confidence prediction",
                 "reasoning": result.get("reasoning", ""),
+                "is_civic_issue": False
             }
 
         final_result = {
@@ -176,6 +178,7 @@ def classify_image(image_path: str, confidence_threshold: float = 0.5) -> dict:
             "confidence": confidence,
             "label": result.get("label", ""),
             "reasoning": result.get("reasoning", ""),
+            "is_civic_issue": True
         }
 
         print("FINAL AI RESULT:")
@@ -191,4 +194,5 @@ def classify_image(image_path: str, confidence_threshold: float = 0.5) -> dict:
             "confidence": 0.0,
             "label": "AI classification failed",
             "reasoning": str(e),
+            "is_civic_issue": False
         }

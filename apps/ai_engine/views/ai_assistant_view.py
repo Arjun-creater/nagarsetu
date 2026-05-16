@@ -90,6 +90,11 @@ class AIComplaintAssistantAPIView(
 
             "confidence":
                 confidence,
+            "is_civic_issue":
+    image_result.get(
+        "is_civic_issue",
+        True
+    ),    
 
             "suggested_title":
                 generated_title,
@@ -99,4 +104,5 @@ class AIComplaintAssistantAPIView(
 
             "priority":
                 "medium",
+                
         })
