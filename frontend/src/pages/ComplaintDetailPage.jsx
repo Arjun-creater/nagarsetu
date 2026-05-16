@@ -21,7 +21,7 @@ import {
 } from "../services/complaintService"
 
 import ComplaintTimeline
-from "./complaints/ComplaintTimeline"
+from "./Complaints/ComplaintTimeline"
 const ComplaintDetailPage = () => {
 
   const { id } = useParams()
