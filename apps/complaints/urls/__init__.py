@@ -1,0 +1,1 @@
+from .complaint_urls import urlpatterns

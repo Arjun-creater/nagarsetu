@@ -1,0 +1,1 @@
+from .civik_hotspot_admin import *
