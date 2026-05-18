@@ -36,11 +36,31 @@ const SignupPage = () => {
 )
       navigate("/login")
     } catch (error) {
-      console.error(error.response?.data)
-      toast.error(
-  "Signup failed"
-)
-    } finally {
+
+  console.error(error.response?.data)
+
+  const errors = error.response?.data
+
+  if (errors?.username) {
+
+    toast.error(
+      "Username already exists. Try another one."
+    )
+
+  } else if (errors?.email) {
+
+    toast.error(
+      "Email already exists. Try another one."
+    )
+
+  } else {
+
+    toast.error(
+      "Signup failed"
+    )
+  }
+
+} finally {
       setIsLoading(false)
     }
   }

@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'apps.ai_engine',
     'apps.common',
     'apps.analytics','drf_spectacular',
+    'apps.chatbot',
     'channels',
     "corsheaders",
     

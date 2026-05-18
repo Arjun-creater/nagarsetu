@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom"
 import Sidebar from "../components/sidebar/Sidebar"
-
+import ChatWidget from "../components/chatbot/ChatWidget"
 const DashboardLayout = () => {
   return (
     <div
@@ -13,6 +13,7 @@ const DashboardLayout = () => {
 >
 
       <Sidebar />
+      <ChatWidget />
 
       <main className="flex-1 p-6 overflow-y-auto">
         <Outlet />

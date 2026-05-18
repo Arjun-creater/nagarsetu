@@ -2,7 +2,7 @@ import json
 import os
 import time
 from pathlib import Path
-
+from apps.departments.models import Department
 from dotenv import load_dotenv
 from google import genai
 from PIL import Image
@@ -17,11 +17,11 @@ if not api_key:
 client = genai.Client(api_key=api_key)
 
 VALID_DEPARTMENTS = [
-    "Roads",
-    "Water",
-    "Sanitation",
-    "Electricity",
-    "Drainage",
+    "Roads Department",
+    "Water Department",
+    "Sanitation Department",
+    "Electricity Department",
+    "Drainage Department",
 ]
 
 PROMPT = """
@@ -29,49 +29,53 @@ You are an AI classifier for municipal civic complaints.
 
 Analyze the uploaded image carefully.
 
-First determine whether the image is related
-to a real civic or municipal issue.
+First determine whether the image clearly shows a civic or municipal issue.
 
-If the image is unrelated to civic issues
-(for example selfies, pets, food, indoor rooms,
-memes, random screenshots, nature photos, etc.)
-then return:
+Examples of civic issues:
+- potholes
+- broken roads
+- garbage accumulation
+- sewage overflow
+- water leakage
+- damaged street lights
+- exposed electric wires
+- blocked drains
 
-{
-  "department": "Unknown",
-  "confidence": 0.0,
-  "label": "Not a civic issue",
-  "reasoning": "Image does not contain a civic problem.",
-  "is_civic_issue":False
-}
+Non-civic images include:
+- selfies
+- pets
+- food
+- indoor rooms
+- memes
+- screenshots
+- anime/cartoons
+- unrelated objects
 
-ONLY if the image clearly shows a civic issue,
-choose ONE department based on the PRIMARY issue.
+If the image is NOT related to a civic issue:
+- set is_civic_issue to False
+- set department to "Unknown"
 
-Departments:
+If the image IS related to a civic issue:
+- set is_civic_issue to True
+- choose ONE department only
 
-- Roads:
-  potholes, broken asphalt, road cracks, damaged pavement
+Valid departments:
+- Roads Department
+- Water Department
+- Sanitation Department
+- Electricity Department
+- Drainage Department
+For unrelated images:
+- department MUST be "Unknown"
+- is_civic_issue MUST be False
 
-- Water:
-  clean water leakage, burst pipes, water supply overflow
+For civic issue images:
+- department MUST be one of:
+  Roads, Water, Sanitation,
+  Electricity, Drainage
+- is_civic_issue MUST be true
 
-- Sanitation:
-  garbage, trash, litter, waste accumulation, overflowing dustbins
-
-- Electricity:
-  damaged electric poles, exposed wires, broken street lights, hanging cables
-
-- Drainage:
-  sewage overflow, blocked drains, dirty gutter overflow, manhole overflow
-
-Important distinctions:
-- If the issue is sewage/drain water -> Drainage
-- If the issue is clean pipeline water leakage -> Water
-- If road damage contains water but MAIN issue is pothole -> Roads
-- Ignore background objects.
-
-Return ONLY valid JSON in this format:
+Return ONLY valid JSON:
 
 {
   "department": "",
@@ -81,6 +85,7 @@ Return ONLY valid JSON in this format:
   "is_civic_issue": false
 }
 """
+
 
 
 def classify_image(image_path: str, confidence_threshold: float = 0.5) -> dict:
@@ -135,11 +140,16 @@ def classify_image(image_path: str, confidence_threshold: float = 0.5) -> dict:
                     raise
 
         if not response:
+
             return {
-                "department": "Unknown",
-                "confidence": 0.0,
-                "label": "Gemini request failed",
-                "reasoning": "No response received from Gemini.",
+
+                "error":
+                    "AI quota exceeded",
+
+                "message":
+                    "Daily AI analysis limit reached. Please try again later.",
+
+                "is_civic_issue": None
             }
 
         raw = response.text.strip()
@@ -156,9 +166,37 @@ def classify_image(image_path: str, confidence_threshold: float = 0.5) -> dict:
 
         raw = raw.strip()
 
+
+# Fix Gemini invalid booleans
+        raw = (
+            raw
+            .replace(": True", ": true")
+            .replace(": False", ": false")
+        )
+
         # Safe JSON parsing
         try:
             result = json.loads(raw)
+            if not result.get(
+    "is_civic_issue",
+    False
+):
+
+                return {
+
+                    "department": "Unknown",
+
+                    "confidence": 0.0,
+
+                    "label": "Not a civic issue",
+
+                    "reasoning": result.get(
+                        "reasoning",
+                        ""
+                    ),
+
+                    "is_civic_issue": False
+                }
 
         except json.JSONDecodeError:
             return {
@@ -166,11 +204,39 @@ def classify_image(image_path: str, confidence_threshold: float = 0.5) -> dict:
                 "confidence": 0.0,
                 "label": "Invalid JSON response",
                 "reasoning": raw[:300],
+                "is_civic_issue": False
             }
 
         department = result.get("department", "Unknown")
+        
+        DEPARTMENT_MAPPING = {
+
+    "Roads":
+        "Roads Department",
+
+    "Water":
+        "Water Department",
+
+    "Sanitation":
+        "Sanitation Department",
+
+    "Electricity":
+        "Electricity Department",
+
+    "Drainage":
+        "Drainage Department",
+}
+
+        department = DEPARTMENT_MAPPING.get(
+            department,
+            department
+        )
+        department_obj = Department.objects.filter(
+    name__iexact=department
+).first()
         confidence = result.get("confidence", 0.0)
 
+        
         # Validate department
         if department not in VALID_DEPARTMENTS:
             return {
@@ -193,6 +259,10 @@ def classify_image(image_path: str, confidence_threshold: float = 0.5) -> dict:
 
         final_result = {
             "department": department,
+            "department_id": (
+        department_obj.id
+        if department_obj else None
+    ),
             "confidence": confidence,
             "label": result.get("label", ""),
             "reasoning": result.get("reasoning", ""),
@@ -206,6 +276,18 @@ def classify_image(image_path: str, confidence_threshold: float = 0.5) -> dict:
 
     except Exception as e:
         print("GEMINI CLASSIFICATION ERROR:", str(e))
+        if "429" in str(e):
+
+            return {
+
+                "error":
+                    "AI quota exceeded",
+
+                "message":
+                    "Daily AI analysis limit reached. Please try again later.",
+
+                "is_civic_issue": None
+            }
 
         return {
             "department": "Unknown",

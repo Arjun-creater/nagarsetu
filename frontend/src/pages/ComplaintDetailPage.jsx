@@ -323,7 +323,7 @@ const ComplaintDetailPage = () => {
                   "
                 >
                   {
-                    complaint.final_ai_department ||
+                    complaint.department ||
                     "Pending"
                   }
                 </h3>

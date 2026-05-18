@@ -314,7 +314,7 @@ const ComplaintTable = ({ limit,})=>{
                           "
                         >
                           {
-                            complaint.final_ai_department ||
+                            complaint.department ||
                             "Unassigned"
                           }
                         </span>

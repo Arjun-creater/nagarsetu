@@ -7,7 +7,9 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
     SpectacularRedocView,
 )
-
+from apps.chatbot.views import (
+    ChatbotAPIView
+)
 urlpatterns = [
     path("admin/", admin.site.urls),
 
@@ -30,7 +32,12 @@ urlpatterns = [
     path(
     "api/ai/",
     include("apps.ai_engine.urls"),
+
 ),
+    path(
+        "api/chatbot/",
+        include("apps.chatbot.urls")
+    ),
     path(
     "api/schema/",
     SpectacularAPIView.as_view(),

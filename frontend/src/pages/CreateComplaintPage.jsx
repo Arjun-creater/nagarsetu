@@ -124,6 +124,19 @@ const CreateComplaintPage = () => {
       "Submission failed:",
       error.response?.data
     )
+     if (
+    error.response?.status === 429
+  ) {
+
+    toast.error(
+
+      error.response?.data?.message ||
+
+      "Daily AI analysis limit reached."
+    )
+
+    return
+  }
 
     toast.error(
       "Failed to analyze image."
@@ -139,12 +152,11 @@ const CreateComplaintPage = () => {
     try {
       setSubmitLoading(true)
       const payload = {
-        title: formData.title.trim(),
-        description: formData.description.trim(),
-        final_ai_department: formData.department.trim(),
-        address:
-  formData.address,
-      }
+  title: formData.title.trim(),
+  description: formData.description.trim(),
+  department:aiResult.department_id,
+  address: formData.address,
+}
 
       if (!payload.title || !payload.description) {
         alert("Please fill in title and description.")

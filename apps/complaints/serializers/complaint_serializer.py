@@ -11,6 +11,7 @@ from apps.complaints.serializers.complaint_history_serializer import (
 class ComplaintSerializer(serializers.ModelSerializer):
 
     citizen = serializers.StringRelatedField()
+    department = serializers.StringRelatedField()
 
 #     media = ComplaintMediaSerializer(
 #         many=True,
@@ -45,5 +46,5 @@ class ComplaintSerializer(serializers.ModelSerializer):
     "address",
     "created_at",
     "citizen",
-    "final_ai_department",
+    "department",
 ]

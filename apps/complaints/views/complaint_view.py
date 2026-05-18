@@ -143,6 +143,7 @@ class ComplaintViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
+        print(serializer.validated_data)
 
         create_complaint(
             validated_data=serializer.validated_data,

@@ -12,6 +12,7 @@ class ComplaintCreateSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "department",
             "address",
             "latitude",
             "longitude",

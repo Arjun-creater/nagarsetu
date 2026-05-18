@@ -26,6 +26,7 @@ export const createComplaint =
       "/complaints/complaints/",
       complaintData
     )
+    console.log(response.data)
 
     return response.data
 }
