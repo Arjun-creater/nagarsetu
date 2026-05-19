@@ -7,7 +7,7 @@ def get_department_complaint_trends():
 
     trends = (
         Complaint.objects
-        .values("final_ai_department")
+        .values("department__name")
         .annotate(
             total_complaints=Count("id")
         )
@@ -43,14 +43,14 @@ def get_department_daily_trends():
         .annotate(day=TruncDate("created_at"))
         .values(
             "day",
-            "final_ai_department",
+            "department__name",
         )
         .annotate(
             total_complaints=Count("id")
         )
         .order_by(
             "day",
-            "final_ai_department",
+            "department",
         )
     )
 

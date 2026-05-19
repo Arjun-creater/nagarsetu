@@ -72,29 +72,22 @@ const DepartmentDistributionChart =
 
           <PieChart>
 
-            <Pie
-              data={data}
-              dataKey="total_complaints"
-              nameKey="final_ai_department"
-              outerRadius={100}
-              label
-            >
-
-              {data.map(
-                (entry, index) => (
-
-                  <Cell
-                    key={index}
-                    fill={
-                      COLORS[
-                        index % COLORS.length
-                      ]
-                    }
-                  />
-                )
-              )}
-
-            </Pie>
+<Pie
+  data={data}
+  dataKey="total_complaints"
+  nameKey="department"
+  outerRadius={100}
+ label={({ payload, value }) =>
+  `${payload["department__name"] || "Unassigned"}: ${value}`
+}
+>
+  {data.map((entry, index) => (
+    <Cell
+      key={index}
+      fill={COLORS[index % COLORS.length]}
+    />
+  ))}
+</Pie>
 
             <Tooltip />
 
